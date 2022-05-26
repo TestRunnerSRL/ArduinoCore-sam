@@ -217,7 +217,12 @@ uint32_t UDD_Send(uint32_t ep, const void* data, uint32_t len)
 
 	TRACE_UOTGHS_DEVICE(printf("=> UDD_Send (1): ep=%lu ul_send_fifo_ptr=%lu len=%lu\r\n", ep, ul_send_fifo_ptr[ep], len);)
 
-	while( UOTGHS_DEVEPTISR_TXINI != (UOTGHS->UOTGHS_DEVEPTISR[ep] & UOTGHS_DEVEPTISR_TXINI )) {}
+	uint32_t timeout = 10000;
+	while( UOTGHS_DEVEPTISR_TXINI != (UOTGHS->UOTGHS_DEVEPTISR[ep] & UOTGHS_DEVEPTISR_TXINI )) 
+	{
+		if ((!(PIOB->PIO_PDSR & PIO_PDSR_P10)) || (timeout == 0)) { break; }
+		timeout--;
+	}
 
 	if (ep == EP0)
 	{
